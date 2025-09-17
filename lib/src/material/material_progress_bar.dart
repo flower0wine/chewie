@@ -5,7 +5,7 @@ import 'package:video_player/video_player.dart';
 
 class MaterialVideoProgressBar extends StatelessWidget {
   MaterialVideoProgressBar(
-    this.controller, {
+    this.videoPlayerController, {
     this.height = kToolbarHeight,
     this.barHeight = 10,
     this.handleHeight = 6,
@@ -20,7 +20,7 @@ class MaterialVideoProgressBar extends StatelessWidget {
   final double height;
   final double barHeight;
   final double handleHeight;
-  final VideoPlayerController controller;
+  final VideoPlayerController videoPlayerController;
   final ChewieProgressColors colors;
   final Function()? onDragStart;
   final Function()? onDragEnd;
@@ -30,7 +30,7 @@ class MaterialVideoProgressBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return VideoProgressBar(
-      controller,
+      videoPlayerController,
       barHeight: barHeight,
       handleHeight: handleHeight,
       drawShadow: true,
