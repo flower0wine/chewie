@@ -1,11 +1,11 @@
 import 'dart:async';
 
-import 'package:chewie/src/chewie_progress_colors.dart';
-import 'package:chewie/src/models/option_item.dart';
-import 'package:chewie/src/models/options_translation.dart';
-import 'package:chewie/src/models/subtitle_model.dart';
-import 'package:chewie/src/notifiers/player_notifier.dart';
-import 'package:chewie/src/player_with_controls.dart';
+import 'package:chewie_flower/src/chewie_progress_colors.dart';
+import 'package:chewie_flower/src/models/option_item.dart';
+import 'package:chewie_flower/src/models/options_translation.dart';
+import 'package:chewie_flower/src/models/subtitle_model.dart';
+import 'package:chewie_flower/src/notifiers/player_notifier.dart';
+import 'package:chewie_flower/src/player_with_controls.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -290,7 +290,7 @@ class ChewieState extends State<Chewie> {
 /// `VideoPlayerController`.
 class ChewieController extends ChangeNotifier {
   ChewieController({
-    required this.videoPlayerController,
+    required VideoPlayerController videoPlayerController,
     this.optionsTranslation,
     this.aspectRatio,
     this.autoInitialize = false,
@@ -338,7 +338,8 @@ class ChewieController extends ChangeNotifier {
   }) : assert(
          playbackSpeeds.every((speed) => speed > 0),
          'The playbackSpeeds values must all be greater than 0',
-       ) {
+       ),
+       _activeVideoPlayerController = videoPlayerController {
     _initialize();
   }
 
@@ -503,7 +504,18 @@ class ChewieController extends ChangeNotifier {
   bool showSubtitles;
 
   /// The controller for the video you want to play
-  final VideoPlayerController videoPlayerController;
+  VideoPlayerController get videoPlayerController =>
+      _activeVideoPlayerController;
+
+  /// The currently active controller that drives playback.
+  late VideoPlayerController _activeVideoPlayerController;
+
+  /// A controller prepared in the background for seamless switching.
+  VideoPlayerController? _preparingVideoPlayerController;
+
+  /// Whether a seamless switch is in progress (can be used by UI for crossfade).
+  bool _isSwitching = false;
+  bool get isSwitching => _isSwitching;
 
   /// Initialize the Video on Startup. This will prep the video for playback.
   final bool autoInitialize;
@@ -665,6 +677,164 @@ class ChewieController extends ChangeNotifier {
 
     if (fullScreenByDefault) {
       videoPlayerController.addListener(_fullScreenListener);
+    }
+  }
+
+  /// Prepare a next VideoPlayerController by initializing it and optionally seeking.
+  /// Does not switch playback yet.
+  Future<void> prepareNext(
+    VideoPlayerController next, {
+    Duration? startAt,
+    bool warmUp = false, // briefly play/pause to prime textures
+  }) async {
+    _preparingVideoPlayerController = next;
+    if (!next.value.isInitialized) {
+      await next.initialize();
+    }
+    if (startAt != null && !isLive) {
+      await next.seekTo(startAt);
+    }
+    if (warmUp) {
+      await next.play();
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      await next.pause();
+    }
+  }
+
+  /// Switch to a previously prepared controller.
+  /// If no prepared controller exists, this is a no-op.
+  Future<void> switchToPrepared({
+    bool keepPosition = true,
+    bool preservePlayState = true,
+    bool preserveVolume = true,
+    bool preserveLooping = true,
+    bool preserveSpeed = true,
+    bool crossfade = true,
+    bool disposeOld = true,
+  }) async {
+    final next = _preparingVideoPlayerController;
+    if (next == null) return;
+
+    await _switchToInternal(
+      next,
+      keepPosition: keepPosition,
+      preservePlayState: preservePlayState,
+      preserveVolume: preserveVolume,
+      preserveLooping: preserveLooping,
+      preserveSpeed: preserveSpeed,
+      crossfade: crossfade,
+      disposeOld: disposeOld,
+    );
+
+    _preparingVideoPlayerController = null;
+  }
+
+  /// Convenience: prepare and switch in one step.
+  Future<void> switchTo(
+    VideoPlayerController next, {
+    Duration? startAt,
+    bool keepPosition = true,
+    bool preservePlayState = true,
+    bool preserveVolume = true,
+    bool preserveLooping = true,
+    bool preserveSpeed = true,
+    bool crossfade = true,
+    bool disposeOld = true,
+    bool warmUp = false,
+  }) async {
+    await prepareNext(next, startAt: startAt, warmUp: warmUp);
+    await switchToPrepared(
+      keepPosition: keepPosition,
+      preservePlayState: preservePlayState,
+      preserveVolume: preserveVolume,
+      preserveLooping: preserveLooping,
+      preserveSpeed: preserveSpeed,
+      crossfade: crossfade,
+      disposeOld: disposeOld,
+    );
+  }
+
+  Future<void> _switchToInternal(
+    VideoPlayerController next, {
+    required bool keepPosition,
+    required bool preservePlayState,
+    required bool preserveVolume,
+    required bool preserveLooping,
+    required bool preserveSpeed,
+    required bool crossfade,
+    required bool disposeOld,
+  }) async {
+    final old = _activeVideoPlayerController;
+
+    // Capture old state
+    final wasInitialized = old.value.isInitialized;
+    final wasPlaying = old.value.isPlaying;
+    final oldPosition = wasInitialized && !isLive ? old.value.position : null;
+    final oldVolume = old.value.volume;
+    final oldLooping = old.value.isLooping;
+    final oldSpeed = old.value.playbackSpeed;
+
+    // Ensure next is initialized
+    if (!next.value.isInitialized) {
+      await next.initialize();
+    }
+
+    // Enter switching state for UI to react (e.g., crossfade)
+    if (crossfade) {
+      _isSwitching = true;
+      notifyListeners();
+    }
+
+    // Stop old playback if needed to avoid audio overlap
+    if (wasPlaying) {
+      await old.pause();
+    }
+
+    // Apply preserved properties to next
+    if (preserveLooping) {
+      await next.setLooping(oldLooping);
+    } else {
+      await next.setLooping(looping);
+    }
+    if (preserveVolume) {
+      await next.setVolume(oldVolume);
+    }
+    if (preserveSpeed) {
+      try {
+        // playbackSpeed API may not be present on some platforms
+        await next.setPlaybackSpeed(oldSpeed);
+      } catch (_) {}
+    }
+
+    if (keepPosition && oldPosition != null) {
+      await next.seekTo(oldPosition);
+    } else if (startAt != null) {
+      // Keep default behavior of ChewieController.startAt for new source if provided
+      await next.seekTo(startAt!);
+    }
+
+    // Switch active controller
+    _activeVideoPlayerController = next;
+    notifyListeners(); // Let UI/controls rebind to the new controller
+
+    // Resume playback state
+    if (preservePlayState && wasPlaying) {
+      await next.play();
+    } else if (!preservePlayState && autoPlay) {
+      await next.play();
+    }
+
+    // Small delay to allow UI to present the new texture before clearing switching state
+    if (crossfade) {
+      await Future<void>.delayed(const Duration(milliseconds: 150));
+      _isSwitching = false;
+      notifyListeners();
+    }
+
+    if (disposeOld) {
+      // Delay a tick to avoid texture contention while UI still holds old reference
+      await Future<void>.delayed(const Duration(milliseconds: 16));
+      await old.dispose();
     }
   }
 

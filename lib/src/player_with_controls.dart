@@ -1,6 +1,6 @@
-import 'package:chewie/src/chewie_player.dart';
-import 'package:chewie/src/helpers/adaptive_controls.dart';
-import 'package:chewie/src/notifiers/index.dart';
+import 'package:chewie_flower/src/chewie_player.dart';
+import 'package:chewie_flower/src/helpers/adaptive_controls.dart';
+import 'package:chewie_flower/src/notifiers/index.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
@@ -39,11 +39,17 @@ class PlayerWithControls extends StatelessWidget {
           if (chewieController.placeholder != null)
             chewieController.placeholder!,
           Center(
-            child: AspectRatio(
-              aspectRatio:
-                  chewieController.aspectRatio ??
-                  chewieController.videoPlayerController.value.aspectRatio,
-              child: VideoPlayer(chewieController.videoPlayerController),
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 150),
+              switchInCurve: Curves.easeIn,
+              switchOutCurve: Curves.easeOut,
+              child: AspectRatio(
+                key: ValueKey(chewieController.videoPlayerController),
+                aspectRatio:
+                    chewieController.aspectRatio ??
+                    chewieController.videoPlayerController.value.aspectRatio,
+                child: VideoPlayer(chewieController.videoPlayerController),
+              ),
             ),
           ),
           if (chewieController.overlay != null) chewieController.overlay!,

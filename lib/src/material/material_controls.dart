@@ -1,16 +1,16 @@
 import 'dart:async';
 
-import 'package:chewie/src/center_play_button.dart';
-import 'package:chewie/src/center_seek_button.dart';
-import 'package:chewie/src/chewie_player.dart';
-import 'package:chewie/src/chewie_progress_colors.dart';
-import 'package:chewie/src/helpers/utils.dart';
-import 'package:chewie/src/material/material_progress_bar.dart';
-import 'package:chewie/src/material/widgets/options_dialog.dart';
-import 'package:chewie/src/material/widgets/playback_speed_dialog.dart';
-import 'package:chewie/src/models/option_item.dart';
-import 'package:chewie/src/models/subtitle_model.dart';
-import 'package:chewie/src/notifiers/index.dart';
+import 'package:chewie_flower/src/center_play_button.dart';
+import 'package:chewie_flower/src/center_seek_button.dart';
+import 'package:chewie_flower/src/chewie_player.dart';
+import 'package:chewie_flower/src/chewie_progress_colors.dart';
+import 'package:chewie_flower/src/helpers/utils.dart';
+import 'package:chewie_flower/src/material/material_progress_bar.dart';
+import 'package:chewie_flower/src/material/widgets/options_dialog.dart';
+import 'package:chewie_flower/src/material/widgets/playback_speed_dialog.dart';
+import 'package:chewie_flower/src/models/option_item.dart';
+import 'package:chewie_flower/src/models/subtitle_model.dart';
+import 'package:chewie_flower/src/notifiers/index.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
@@ -108,6 +108,8 @@ class _MaterialControlsState extends State<MaterialControls>
 
   @override
   void dispose() {
+    // Remove listeners
+    _chewieController?.removeListener(_onChewieChanged);
     _dispose();
     super.dispose();
   }
@@ -126,11 +128,26 @@ class _MaterialControlsState extends State<MaterialControls>
     controller = chewieController.videoPlayerController;
 
     if (oldController != chewieController) {
+      // Re-bind chewie listeners
+      oldController?.removeListener(_onChewieChanged);
+      _chewieController?.addListener(_onChewieChanged);
       _dispose();
       _initialize();
     }
 
     super.didChangeDependencies();
+  }
+
+  void _onChewieChanged() {
+    // If the underlying VideoPlayerController changed, rebind listeners/state
+    if (!mounted) return;
+    final newController = chewieController.videoPlayerController;
+    if (!identical(controller, newController)) {
+      _dispose();
+      controller = newController;
+      _initialize();
+      if (mounted) setState(() {});
+    }
   }
 
   Widget _buildActionBar() {

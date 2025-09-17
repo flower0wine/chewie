@@ -1,4 +1,9 @@
-# chewie
+# chewie_flower
+
+This package is a fork of the excellent Chewie project. Original repository:
+https://github.com/fluttercommunity/chewie
+
+Thanks to the Chewie maintainers and contributors for their great work. This fork adds seamless video source switching ("无感切源") and related enhancements while keeping APIs familiar.
 
 [![Flutter Community: chewie](https://fluttercommunity.dev/_github/header/chewie)](https://github.com/fluttercommunity/community)
 

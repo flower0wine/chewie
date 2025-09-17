@@ -4,11 +4,11 @@ version: 1.0.0
 publish_to: none
 
 environment:
-  sdk: '>=3.8.0 <4.0.0'
+  sdk: ">=3.8.0 <4.0.0"
   flutter: ">=3.32.0"
 
 dependencies:
-  chewie:
+  chewie_flower:
     path: ../
   flutter:
     sdk: flutter

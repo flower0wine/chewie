@@ -2,16 +2,16 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
-import 'package:chewie/src/animated_play_pause.dart';
-import 'package:chewie/src/center_play_button.dart';
-import 'package:chewie/src/chewie_player.dart';
-import 'package:chewie/src/chewie_progress_colors.dart';
-import 'package:chewie/src/cupertino/cupertino_progress_bar.dart';
-import 'package:chewie/src/cupertino/widgets/cupertino_options_dialog.dart';
-import 'package:chewie/src/helpers/utils.dart';
-import 'package:chewie/src/models/option_item.dart';
-import 'package:chewie/src/models/subtitle_model.dart';
-import 'package:chewie/src/notifiers/index.dart';
+import 'package:chewie_flower/src/animated_play_pause.dart';
+import 'package:chewie_flower/src/center_play_button.dart';
+import 'package:chewie_flower/src/chewie_player.dart';
+import 'package:chewie_flower/src/chewie_progress_colors.dart';
+import 'package:chewie_flower/src/cupertino/cupertino_progress_bar.dart';
+import 'package:chewie_flower/src/cupertino/widgets/cupertino_options_dialog.dart';
+import 'package:chewie_flower/src/helpers/utils.dart';
+import 'package:chewie_flower/src/models/option_item.dart';
+import 'package:chewie_flower/src/models/subtitle_model.dart';
+import 'package:chewie_flower/src/notifiers/index.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -128,6 +128,7 @@ class _CupertinoControlsState extends State<CupertinoControls>
 
   @override
   void dispose() {
+    _chewieController?.removeListener(_onChewieChanged);
     _dispose();
     super.dispose();
   }
@@ -146,11 +147,24 @@ class _CupertinoControlsState extends State<CupertinoControls>
     controller = chewieController.videoPlayerController;
 
     if (oldController != chewieController) {
+      oldController?.removeListener(_onChewieChanged);
+      _chewieController?.addListener(_onChewieChanged);
       _dispose();
       _initialize();
     }
 
     super.didChangeDependencies();
+  }
+
+  void _onChewieChanged() {
+    if (!mounted) return;
+    final newController = chewieController.videoPlayerController;
+    if (!identical(controller, newController)) {
+      _dispose();
+      controller = newController;
+      _initialize();
+      if (mounted) setState(() {});
+    }
   }
 
   GestureDetector _buildOptionsButton(Color iconColor, double barHeight) {

@@ -1,4 +1,4 @@
-import 'package:chewie/chewie.dart';
+import 'package:chewie_flower/chewie_flower.dart';
 import 'package:chewie_example/app/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';

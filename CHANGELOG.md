@@ -1,3 +1,11 @@
+## [1.14.0]
+* ✨ Feature: Seamless video source switching ("无感切源")
+  - New ChewieController APIs: `prepareNext`, `switchToPrepared`, `switchTo`
+  - Preserve play/pause state, position (non-live), volume, looping, and speed during switch
+  - Fullscreen-safe: switching works inside fullscreen without leaving it
+* 🎨 UI: Added crossfade via `AnimatedSwitcher` to reduce flicker when switching sources
+* 🧭 Controls: Material, Cupertino, and Desktop controls now automatically rebind to the new `VideoPlayerController` on switch
+
 ## [1.13.0]
 * 🛠️ [#927](https://github.com/fluttercommunity/chewie/pull/927): Fix(web): Keep playback when entering/exiting fullscreen on web. Thanks [victorspringer](https://github.com/victorspringer).
 * **BREAKING CHANGE**: Library now requires at least Flutter version `3.32.0` or higher.

@@ -1,5 +1,5 @@
-import 'package:chewie/chewie.dart';
-import 'package:chewie/src/center_play_button.dart';
+import 'package:chewie_flower/chewie_flower.dart';
+import 'package:chewie_flower/src/center_play_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:video_player/video_player.dart';
