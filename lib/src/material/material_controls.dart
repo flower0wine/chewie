@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:chewie_flower/src/center_play_button.dart';
 import 'package:chewie_flower/src/center_seek_button.dart';
-import 'package:chewie_flower/src/chewie_player.dart';
+import 'package:chewie_flower/src/chewie_controller.dart';
 import 'package:chewie_flower/src/chewie_progress_colors.dart';
 import 'package:chewie_flower/src/helpers/utils.dart';
 import 'package:chewie_flower/src/material/material_progress_bar.dart';

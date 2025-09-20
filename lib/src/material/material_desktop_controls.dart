@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:chewie_flower/src/animated_play_pause.dart';
 import 'package:chewie_flower/src/center_play_button.dart';
-import 'package:chewie_flower/src/chewie_player.dart';
 import 'package:chewie_flower/src/chewie_progress_colors.dart';
 import 'package:chewie_flower/src/helpers/utils.dart';
 import 'package:chewie_flower/src/material/material_progress_bar.dart';
@@ -15,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
+import 'package:chewie_flower/src/chewie_controller.dart';
 
 class MaterialDesktopControls extends StatefulWidget {
   const MaterialDesktopControls({this.showPlayButton = true, super.key});

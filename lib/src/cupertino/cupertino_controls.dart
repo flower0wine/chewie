@@ -4,7 +4,6 @@ import 'dart:ui' as ui;
 
 import 'package:chewie_flower/src/animated_play_pause.dart';
 import 'package:chewie_flower/src/center_play_button.dart';
-import 'package:chewie_flower/src/chewie_player.dart';
 import 'package:chewie_flower/src/chewie_progress_colors.dart';
 import 'package:chewie_flower/src/cupertino/cupertino_progress_bar.dart';
 import 'package:chewie_flower/src/cupertino/widgets/cupertino_options_dialog.dart';
@@ -16,6 +15,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
+import 'package:chewie_flower/src/chewie_controller.dart';
 
 class CupertinoControls extends StatefulWidget {
   const CupertinoControls({

@@ -1,4 +1,4 @@
-import 'package:chewie_flower/src/chewie_player.dart';
+import 'package:chewie_flower/src/chewie_controller.dart';
 import 'package:chewie_flower/src/helpers/adaptive_controls.dart';
 import 'package:chewie_flower/src/notifiers/index.dart';
 import 'package:flutter/material.dart';
