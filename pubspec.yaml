@@ -1,6 +1,6 @@
 name: chewie_flower
 description: A video player for Flutter with Cupertino and Material play controls
-version: 1.14.0
+version: 1.14.1
 homepage: https://github.com/flower0wine/chewie
 
 environment:

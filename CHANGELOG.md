@@ -1,3 +1,18 @@
+## [1.14.1]
+* ✨ Feature: 多实例全屏协调（FullscreenCoordinator 单例）
+  - 新增全局协调器，集中管理 SystemChrome 与 Wakelock 副作用，解决同页面多个播放器的冲突。
+  - 默认策略改为 `replace`：当 B 请求进入全屏且 A 已在全屏时，直接将“全屏所有权”交接给 B，不切换/恢复任何副作用，保证切换快速顺滑。
+  - 新增 `requestEnterDecision` 返回 `EnterDecision { allowed, needsSideEffects, replacedController }`，可用于精细化控制。
+  - 统一在协调器中应用/恢复副作用；在 `replace` 交接时跳过 A 的退出副作用恢复，避免影响 B。
+* 🧩 事件可观测性：
+  - 新增 `ChewieEventType` 与 `ChewieEvent`，并在关键节点发出事件（如 `fullscreenEnterRequested/Approved/Denied/PolicyDenied/Applied`、`fullscreenExitRequested/Applied`）。
+  - `ChewieController` 新增 `onEvent` 回调，便于埋点与日志。
+* 🧰 结构优化：
+  - 将 `PlayerNotifier` 上移至 `ChewieController` 统一持有与释放；`DefaultChewieFullScreen` 不再需要外部传 `notifier`。
+  - 移除 `onEnterFullScreen` 内部副作用逻辑，避免与协调器重复；相关 imports 清理。
+* ♻️ 兼容性：
+  - `onEnterFullScreenRequested`/`onExitFullScreenRequested` 仍然可用；外部接管路由时仅由协调器处理副作用。
+
 ## [1.14.0]
 * ✨ Feature: Seamless video source switching ("无感切源")
   - New ChewieController APIs: `prepareNext`, `switchToPrepared`, `switchTo`
